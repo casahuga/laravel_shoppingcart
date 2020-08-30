@@ -607,7 +607,7 @@ class Cart
      * Set the global tax rate for the cart.
      * This will set the tax rate for all items.
      *
-     * @param float $discount
+     * @param float $taxRate
      */
     public function setGlobalTax($taxRate)
     {
@@ -775,6 +775,7 @@ class Cart
             'identifier' => $identifier,
             'instance'   => $this->currentInstance(),
             'user_id'    => $this->userId,
+            'total'      => $this->totalFloat(),
             'content'    => serialize($content),
             'created_at' => $this->createdAt ?: Carbon::now(),
             'updated_at' => Carbon::now(),
