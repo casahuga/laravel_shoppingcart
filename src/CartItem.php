@@ -16,6 +16,7 @@ use ReflectionClass;
  * @property-read float discountTotal
  * @property-read float priceTarget
  * @property-read float priceNet
+ * @property-read float priceCommission
  * @property-read float priceTotal
  * @property-read float subtotal
  * @property-read float taxTotal
@@ -96,6 +97,20 @@ class CartItem implements Arrayable, Jsonable
     private $discountRate = 0;
 
     /**
+     * Item commission for the cart item.
+     *
+     * @var float
+     */
+    private $commission = 0;
+
+    /**
+     * Fixed discount for the cart item.
+     *
+     * @var float
+     */
+    private $fixedDiscount = 0;
+
+    /**
      * CartItem constructor.
      *
      * @param int|string $id
@@ -153,6 +168,20 @@ class CartItem implements Arrayable, Jsonable
     public function price($decimals = null, $decimalPoint = null, $thousandSeperator = null)
     {
         return $this->numberFormat($this->price, $decimals, $decimalPoint, $thousandSeperator);
+    }
+
+    /**
+     * Return the formatted price with commission.
+     *
+     * @param int    $decimals
+     * @param string $decimalPoint
+     * @param string $thousandSeperator
+     *
+     * @return string
+     */
+    public function priceCommission($decimals = null, $decimalPoint = null, $thousandSeperator = null)
+    {
+        return $this->numberFormat($this->priceCommission, $decimals, $decimalPoint, $thousandSeperator);
     }
 
     /**
@@ -368,6 +397,36 @@ class CartItem implements Arrayable, Jsonable
     public function setDiscountRate($discountRate)
     {
         $this->discountRate = $discountRate;
+        $this->fixedDiscount = 0;
+
+        return $this;
+    }
+
+    /**
+     * Set the fixed discount.
+     *
+     * @param int|float $fixedDiscount
+     *
+     * @return \Gloudemans\Shoppingcart\CartItem
+     */
+    public function setFixedDiscount($fixedDiscount)
+    {
+        $this->fixedDiscount = $fixedDiscount;
+        $this->discountRate = 0;
+
+        return $this;
+    }
+
+    /**
+     * Set the commission
+     *
+     * @param int|float $commission
+     *
+     * @return \Gloudemans\Shoppingcart\CartItem
+     */
+    public function setCommission($commission)
+    {
+        $this->commission = $commission;
 
         return $this;
     }
@@ -535,5 +594,27 @@ class CartItem implements Arrayable, Jsonable
     public function getDiscountRate()
     {
         return $this->discountRate;
+    }
+
+    /**
+     * Getter for the raw internal fixed discount.
+     * Should be used in calculators.
+     *
+     * @return float
+     */
+    public function getFixedDiscount()
+    {
+        return $this->fixedDiscount;
+    }
+
+    /**
+     * Getter for the raw internal commission.
+     * Should be used in calculators.
+     *
+     * @return float
+     */
+    public function getComission()
+    {
+        return $this->commission;
     }
 }

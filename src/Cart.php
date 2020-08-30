@@ -8,6 +8,7 @@ use Gloudemans\Shoppingcart\Contracts\Buyable;
 use Gloudemans\Shoppingcart\Contracts\InstanceIdentifier;
 use Gloudemans\Shoppingcart\Exceptions\CartAlreadyStoredException;
 use Gloudemans\Shoppingcart\Exceptions\InvalidRowIDException;
+use Gloudemans\Shoppingcart\Exceptions\MixedDiscountsException;
 use Gloudemans\Shoppingcart\Exceptions\UnknownModelException;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\DatabaseManager;
@@ -61,11 +62,32 @@ class Cart
     private $discount = 0;
 
     /**
+     * Defines the fixed discount.
+     *
+     * @var float
+     */
+    private $fixedDiscount = 0;
+
+    /**
+     * Defines the commission.
+     *
+     * @var float
+     */
+    private $commission;
+
+    /**
      * Defines the tax rate.
      *
      * @var float
      */
     private $taxRate = 0;
+
+    /**
+     * Defines the user
+     *
+     * @var int
+     */
+    private $userId = null;
 
     /**
      * Cart constructor.
@@ -78,6 +100,7 @@ class Cart
         $this->session = $session;
         $this->events = $events;
         $this->taxRate = config('cart.tax');
+        $this->commission = config('cart.commission');
 
         $this->instance(self::DEFAULT_INSTANCE);
     }
@@ -141,15 +164,20 @@ class Cart
     /**
      * Add an item to the cart.
      *
-     * @param \Gloudemans\Shoppingcart\CartItem $item          Item to add to the Cart
-     * @param bool                              $keepDiscount  Keep the discount rate of the Item
-     * @param bool                              $keepTax       Keep the Tax rate of the Item
+     * @param \Gloudemans\Shoppingcart\CartItem $item              Item to add to the Cart
+     * @param bool                              $keepCommission    Keep the commission of the Item
+     * @param bool                              $keepDiscount      Keep the discount rate of the Item
+     * @param bool                              $keepTax           Keep the Tax rate of the Item
      * @param bool                              $dispatchEvent
      *
      * @return \Gloudemans\Shoppingcart\CartItem The CartItem
      */
-    public function addCartItem($item, $keepDiscount = false, $keepTax = false, $dispatchEvent = true)
+    public function addCartItem($item, $keepCommission = false, $keepDiscount = false, $keepTax = false, $dispatchEvent = true)
     {
+        if ($keepCommission) {
+            $item->setCommission($this->commission);
+        }
+
         if (!$keepDiscount) {
             $item->setDiscountRate($this->discount);
         }
@@ -390,7 +418,7 @@ class Cart
     }
 
     /**
-     * Get the discount of the items in the cart.
+     * Get the discount of the items in the cart and cart discount if applied.
      *
      * @return float
      */
@@ -398,7 +426,7 @@ class Cart
     {
         return $this->getContent()->reduce(function ($discount, CartItem $cartItem) {
             return $discount + $cartItem->discountTotal;
-        }, 0);
+        }, 0) + $this->fixedDiscount;
     }
 
     /**
@@ -413,6 +441,30 @@ class Cart
     public function discount($decimals = null, $decimalPoint = null, $thousandSeperator = null)
     {
         return $this->numberFormat($this->discountFloat(), $decimals, $decimalPoint, $thousandSeperator);
+    }
+
+    /**
+     * Get the global discount of the cart.
+     *
+     * @return float
+     */
+    public function globalDiscountFloat()
+    {
+        return $this->fixedDiscount;
+    }
+
+    /**
+     * Get the global discount of the cart as formatted string.
+     *
+     * @param int    $decimals
+     * @param string $decimalPoint
+     * @param string $thousandSeperator
+     *
+     * @return string
+     */
+    public function globalDiscount($decimals = null, $decimalPoint = null, $thousandSeperator = null)
+    {
+        return $this->numberFormat($this->globalDiscountFloat(), $decimals, $decimalPoint, $thousandSeperator);
     }
 
     /**
@@ -570,10 +622,66 @@ class Cart
     }
 
     /**
+     * Set the commission for the cart item with the given rowId
+     *
+     * @param string $rowId
+     * @param int|float $commission
+     */
+    public function setCommission($rowId, $commission)
+    {
+        $cartItem = $this->get($rowId);
+
+        $cartItem->setCommission($commission);
+
+        $content = $this->getContent();
+
+        $content->put($cartItem->rowId, $cartItem);
+
+        $this->session->put($this->instance, $content);
+    }
+
+    /**
+     * Set userId of the cart
+     *
+     * @param int $userId
+     */
+    public function setUserId($userId)
+    {
+        $this->userId = $userId;
+    }
+
+    /**
+     * Get the userId of the cart
+     */
+    public function getUserId()
+    {
+        return $userId;
+    }
+
+
+    /**
+     * Set the global commission for the cart.
+     * This will set the commission rate for all the items.
+     *
+     * @param int|float $commission
+     */
+    public function setGlobalCommission($commission)
+    {
+        $this->commission = $commission;
+
+        $content = $this->getContent();
+        if($content && $content->count()) {
+            $content->each(function ($item, $key) {
+                $item->setCommission($this->commission);
+            });
+        }
+    }
+
+    /**
      * Set the discount rate for the cart item with the given rowId.
      *
      * @param string    $rowId
-     * @param int|float $taxRate
+     * @param int|float $discount
      *
      * @return void
      */
@@ -611,6 +719,40 @@ class Cart
     }
 
     /**
+     * Set the fixed discount for the cart item with the given rowId.
+     *
+     * @param string    $rowId
+     * @param int|float $fixedDiscount
+     *
+     * @return void
+     */
+    public function setFixedDiscount($rowId, $fixedDiscount)
+    {
+        $cartItem = $this->get($rowId);
+
+        $cartItem->setFixedDiscount($fixedDiscount);
+
+        $content = $this->getContent();
+
+        $content->put($cartItem->rowId, $cartItem);
+
+        $this->session->put($this->instance, $content);
+    }
+
+    /**
+     * Set the global fixed discount for the cart.
+     * This will set the discount for all cart items.
+     *
+     * @param float $fixedDiscount
+     *
+     * @return void
+     */
+    public function setGlobalFixedDiscount($fixedDiscount)
+    {
+        $this->fixedDiscount = $fixedDiscount;
+    }
+
+    /**
      * Store an the current instance of the cart.
      *
      * @param mixed $identifier
@@ -632,6 +774,7 @@ class Cart
         $this->getConnection()->table($this->getTableName())->insert([
             'identifier' => $identifier,
             'instance'   => $this->currentInstance(),
+            'user_id'    => $this->userId,
             'content'    => serialize($content),
             'created_at' => $this->createdAt ?: Carbon::now(),
             'updated_at' => Carbon::now(),
@@ -682,6 +825,48 @@ class Cart
         $this->updatedAt = Carbon::parse(data_get($stored, 'updated_at'));
 
         $this->getConnection()->table($this->getTableName())->where('identifier', $identifier)->delete();
+    }
+
+    /**
+     * Restore the cart with the given identifier without removing from database.
+     *
+     * @param mixed $identifier
+     *
+     * @return void
+     */
+    public function restoreWithoutRemoving($identifier)
+    {
+        if ($identifier instanceof InstanceIdentifier) {
+            $identifier = $identifier->getInstanceIdentifier();
+        }
+
+        if (!$this->storedCartWithIdentifierExists($identifier)) {
+            return;
+        }
+
+        $stored = $this->getConnection()->table($this->getTableName())
+            ->where('identifier', $identifier)->first();
+
+        $storedContent = unserialize(data_get($stored, 'content'));
+
+        $currentInstance = $this->currentInstance();
+
+        $this->instance(data_get($stored, 'instance'));
+
+        $content = $this->getContent();
+
+        foreach ($storedContent as $cartItem) {
+            $content->put($cartItem->rowId, $cartItem);
+        }
+
+        $this->events->dispatch('cart.restored');
+
+        $this->session->put($this->instance, $content);
+
+        $this->instance($currentInstance);
+
+        $this->createdAt = Carbon::parse(data_get($stored, 'created_at'));
+        $this->updatedAt = Carbon::parse(data_get($stored, 'updated_at'));
     }
 
     /**
@@ -752,6 +937,8 @@ class Cart
                 return $this->tax();
             case 'subtotal':
                 return $this->subtotal();
+            case 'discount':
+                return $this->discount();
             default:
                 return;
         }

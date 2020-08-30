@@ -28,6 +28,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Default vendor commission
+    |--------------------------------------------------------------------------
+    |
+    | This default vendor commission will be used when you make a class implement the
+    | Taxable interface and use the HasTax trait.
+    |
+    */
+
+    'commission' => 0,
+
+    /*
+    |--------------------------------------------------------------------------
     | Shoppingcart database settings
     |--------------------------------------------------------------------------
     |
