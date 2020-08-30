@@ -655,7 +655,7 @@ class Cart
      */
     public function getUserId()
     {
-        return $userId;
+        return $this->userId;
     }
 
 
@@ -824,6 +824,7 @@ class Cart
 
         $this->createdAt = Carbon::parse(data_get($stored, 'created_at'));
         $this->updatedAt = Carbon::parse(data_get($stored, 'updated_at'));
+        $this->userId = data_get($stored, 'user_id');
 
         $this->getConnection()->table($this->getTableName())->where('identifier', $identifier)->delete();
     }
@@ -868,6 +869,7 @@ class Cart
 
         $this->createdAt = Carbon::parse(data_get($stored, 'created_at'));
         $this->updatedAt = Carbon::parse(data_get($stored, 'updated_at'));
+        $this->userId = data_get($stored, 'user_id');
     }
 
     /**
