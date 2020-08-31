@@ -678,15 +678,6 @@ class Cart
     }
 
     /**
-     * Get the discountId of the cart
-     */
-    public function getDiscountId()
-    {
-        return $this->discountId;
-    }
-
-
-    /**
      * Set the global commission for the cart.
      * This will set the commission rate for all the items.
      *
