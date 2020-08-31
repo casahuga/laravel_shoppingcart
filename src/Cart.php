@@ -705,6 +705,16 @@ class Cart
     }
 
     /**
+     * Get global commission applied
+     *
+     * @return float
+     */
+    public function getGlobalComission()
+    {
+        return $this->commission;
+    }
+
+    /**
      * Set the discount rate for the cart item with the given rowId.
      *
      * @param string    $rowId
@@ -1130,5 +1140,24 @@ class Cart
     public function updatedAt()
     {
         return $this->updatedAt;
+    }
+
+    /**
+     * Get userId
+     *
+     * @return int|null
+     */
+    public function userId()
+    {
+        return $this->userId;
+    }
+
+    /**
+     * Get discount Id
+     * @return int
+     */
+    public function discountId()
+    {
+        return $this->discountId;
     }
 }

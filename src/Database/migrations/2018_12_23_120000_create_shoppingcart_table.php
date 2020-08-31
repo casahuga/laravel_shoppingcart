@@ -15,6 +15,7 @@ class CreateShoppingcartTable extends Migration
             $table->string('identifier');
             $table->string('instance');
             $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('discount_id')->nullable();
             $table->longText('content');
             $table->nullableTimestamps();
 

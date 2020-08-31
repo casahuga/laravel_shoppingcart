@@ -613,7 +613,7 @@ class CartItem implements Arrayable, Jsonable
      *
      * @return float
      */
-    public function getComission()
+    public function getCommission()
     {
         return $this->commission;
     }

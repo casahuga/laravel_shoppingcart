@@ -24,7 +24,7 @@ class DefaultCalculator implements Calculator
             case 'discountTotal':
                 return round($cartItem->discount * $cartItem->qty, $decimals);
             case 'priceCommission':
-                return round($cartItem->price * ($cartItem->getComission() / 100));
+                return round($cartItem->price * ($cartItem->getCommission() / 100));
             case 'priceTotal':
                 return round($cartItem->priceCommission * $cartItem->qty, $decimals);
             case 'subtotal':
