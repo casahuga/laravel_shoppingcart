@@ -14,19 +14,23 @@ class DefaultCalculator implements Calculator
         switch ($attribute) {
             case 'discount':
                 if ($cartItem->getFixedDiscount() > 0) {
-                    return ($cartItem->price - $cartItem->getFixedDiscount() < 0 ) ? $cartItem->price : $cartItem->getFixedDiscount();
+                    return round(($cartItem->price - $cartItem->getFixedDiscount() < 0 ) ? $cartItem->price : $cartItem->getFixedDiscount(), $decimals);
                 }
-                return $cartItem->price * ($cartItem->getDiscountRate() / 100);
+                return round($cartItem->price * ($cartItem->getDiscountRate() / 100), $decimals);
             case 'tax':
                 return round($cartItem->priceTarget * ($cartItem->taxRate / 100), $decimals);
             case 'priceTax':
                 return round($cartItem->priceTarget + $cartItem->tax, $decimals);
             case 'discountTotal':
                 return round($cartItem->discount * $cartItem->qty, $decimals);
+            case 'commissionValue':
+                return round($cartItem->price * ($cartItem->getCommission() / 100), $decimals);
+            case 'commissionTotal':
+                return round($cartItem->commissionValue * $cartItem->qty, $decimals);
             case 'priceCommission':
-                return round($cartItem->price * ($cartItem->getCommission() / 100));
-            case 'priceTotal':
                 return round($cartItem->priceCommission * $cartItem->qty, $decimals);
+            case 'priceTotal':
+                return round($cartItem->price + $cartItem->commissionTotal, $decimals);
             case 'subtotal':
                 return max(round($cartItem->priceTotal - $cartItem->discountTotal, $decimals), 0);
             case 'priceTarget':
