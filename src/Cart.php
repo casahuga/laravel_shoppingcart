@@ -69,6 +69,13 @@ class Cart
     private $fixedDiscount = 0;
 
     /**
+     * Defines the discount Id.
+     *
+     * @var int
+     */
+    private $discountId = 0;
+
+    /**
      * Defines the commission.
      *
      * @var float
@@ -174,12 +181,14 @@ class Cart
      */
     public function addCartItem($item, $keepCommission = false, $keepDiscount = false, $keepTax = false, $dispatchEvent = true)
     {
-        if ($keepCommission) {
+        if (!$keepCommission) {
             $item->setCommission($this->commission);
         }
 
         if (!$keepDiscount) {
-            $item->setDiscountRate($this->discount);
+            if ($this->discount != 0) {
+                $item->setDiscountRate($this->discount);
+            }
         }
 
         if (!$keepTax) {
@@ -426,7 +435,7 @@ class Cart
     {
         return $this->getContent()->reduce(function ($discount, CartItem $cartItem) {
             return $discount + $cartItem->discountTotal;
-        }, 0) + $this->fixedDiscount;
+        }, 0) + $this->fixedDiscount - $this->fixedDiscount * ($this->taxRate / 100);
     }
 
     /**
@@ -658,6 +667,24 @@ class Cart
         return $this->userId;
     }
 
+    /**
+     * Set discountId of the cart
+     *
+     * @param int $discountId
+     */
+    public function setDiscountId($discountId)
+    {
+        $this->discountId = $discountId;
+    }
+
+    /**
+     * Get the discountId of the cart
+     */
+    public function getDiscountId()
+    {
+        return $this->discountId;
+    }
+
 
     /**
      * Set the global commission for the cart.
@@ -750,6 +777,15 @@ class Cart
     public function setGlobalFixedDiscount($fixedDiscount)
     {
         $this->fixedDiscount = $fixedDiscount;
+        $this->discount = 0;
+
+        // Clear other discounts
+        $content = $this->getContent();
+        if ($content && $content->count()) {
+            $content->each(function ($item, $key) {
+                $item->setDiscountRate($this->discount);
+            });
+        }
     }
 
     /**
@@ -775,6 +811,7 @@ class Cart
             'identifier' => $identifier,
             'instance'   => $this->currentInstance(),
             'user_id'    => $this->userId,
+            'discount_id' => $this->discountId,
             'total'      => $this->totalFloat(),
             'content'    => serialize($content),
             'created_at' => $this->createdAt ?: Carbon::now(),
@@ -941,7 +978,7 @@ class Cart
             case 'subtotal':
                 return $this->subtotal();
             case 'discount':
-                return $this->discount();
+                return ($this->priceTotalFloat() - $this->discount() < 0) ? $this->priceTotalFloat() : $this->discount();
             default:
                 return;
         }

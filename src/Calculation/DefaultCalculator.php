@@ -14,7 +14,7 @@ class DefaultCalculator implements Calculator
         switch ($attribute) {
             case 'discount':
                 if ($cartItem->getFixedDiscount() > 0) {
-                    return $cartItem->getFixedDiscount();
+                    return ($cartItem->price - $cartItem->getFixedDiscount() < 0 ) ? $cartItem->price : $cartItem->getFixedDiscount();
                 }
                 return $cartItem->price * ($cartItem->getDiscountRate() / 100);
             case 'tax':
