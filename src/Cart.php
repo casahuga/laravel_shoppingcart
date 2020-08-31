@@ -357,8 +357,8 @@ class Cart
     {
         $subtotalWithoutTax = $this->getContent()->reduce(function ($subtotal, CartItem $cartItem) {
                 return $subtotal + $cartItem->subtotal;
-            }, 0) - $this->fixedDiscount;
-        $subtotalWithTax = $subtotalWithoutTax + ($subtotalWithoutTax*($this->taxRate / 100));
+            }, 0) - $this->fixedDiscount + ($this->fixedDiscount * ($this->taxRate / 100));
+        $subtotalWithTax = $subtotalWithoutTax + ($subtotalWithoutTax * ($this->taxRate / 100));
         return $subtotalWithTax;
     }
 
@@ -383,9 +383,10 @@ class Cart
      */
     public function taxFloat()
     {
-        return $this->getContent()->reduce(function ($tax, CartItem $cartItem) {
-            return $tax + $cartItem->taxTotal;
-        }, 0);
+        $subtotalWithoutTax = $this->getContent()->reduce(function ($subtotal, CartItem $cartItem) {
+                return $subtotal + $cartItem->subtotal;
+            }, 0) - $this->fixedDiscount + ($this->fixedDiscount * ($this->taxRate / 100));
+        return $subtotalWithoutTax;
     }
 
     /**
@@ -426,6 +427,32 @@ class Cart
     public function subtotal($decimals = null, $decimalPoint = null, $thousandSeperator = null)
     {
         return $this->numberFormat($this->subtotalFloat(), $decimals, $decimalPoint, $thousandSeperator);
+    }
+
+    /**
+     * Get the subtotal (total - tax) of the items in the cart.
+     *
+     * @return float
+     */
+    public function subtotalTaxFloat()
+    {
+        return $this->getContent()->reduce(function ($tax, CartItem $cartItem) {
+            return $tax + $cartItem->taxTotal;
+        }, 0);
+    }
+
+    /**
+     * Get the subtotal (total - tax) of the items in the cart as formatted string.
+     *
+     * @param int    $decimals
+     * @param string $decimalPoint
+     * @param string $thousandSeperator
+     *
+     * @return string
+     */
+    public function subtotalTax($decimals = null, $decimalPoint = null, $thousandSeperator = null)
+    {
+        return $this->numberFormat($this->subtotalTaxFloat(), $decimals, $decimalPoint, $thousandSeperator);
     }
 
     /**

@@ -33,6 +33,10 @@ class DefaultCalculator implements Calculator
                 return round($cartItem->price + $cartItem->commissionTotal, $decimals);
             case 'subtotal':
                 return max(round($cartItem->priceTotal - $cartItem->discountTotal, $decimals), 0);
+            case 'taxSubtotal':
+                return round($cartItem->subtotal * ($cartItem->taxRate / 100), $decimals);
+            case 'subtotalTax':
+                return round($cartItem->subtotal - $cartItem->taxSubtotal, $decimals);
             case 'priceTarget':
                 return round(($cartItem->priceTotal - $cartItem->discountTotal) / $cartItem->qty, $decimals);
             case 'taxTotal':

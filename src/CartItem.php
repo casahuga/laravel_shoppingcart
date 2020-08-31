@@ -19,6 +19,8 @@ use ReflectionClass;
  * @property-read float priceCommission
  * @property-read float priceTotal
  * @property-read float subtotal
+ * @property-read float taxSubtotal
+ * @property-read float subtotalTax
  * @property-read float taxTotal
  * @property-read float tax
  * @property-read float total
