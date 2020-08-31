@@ -386,7 +386,7 @@ class Cart
         $subtotalWithoutTax = $this->getContent()->reduce(function ($subtotal, CartItem $cartItem) {
                 return $subtotal + $cartItem->subtotal;
             }, 0) - $this->fixedDiscount + ($this->fixedDiscount * ($this->taxRate / 100));
-        return $subtotalWithoutTax;
+        return ($subtotalWithoutTax * ($this->taxRate / 100));
     }
 
     /**
