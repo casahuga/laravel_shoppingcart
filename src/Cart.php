@@ -355,9 +355,11 @@ class Cart
      */
     public function totalFloat()
     {
-        return $this->getContent()->reduce(function ($total, CartItem $cartItem) {
-            return $total + $cartItem->total;
-        }, 0);
+        $subtotalWithoutTax = $this->getContent()->reduce(function ($subtotal, CartItem $cartItem) {
+                return $subtotal + $cartItem->subtotal;
+            }, 0) - $this->fixedDiscount;
+        $subtotalWithTax = $subtotalWithoutTax + ($subtotalWithoutTax*($this->taxRate / 100));
+        return $subtotalWithTax;
     }
 
     /**
@@ -434,8 +436,8 @@ class Cart
     public function discountFloat()
     {
         return $this->getContent()->reduce(function ($discount, CartItem $cartItem) {
-            return $discount + $cartItem->discountTotal;
-        }, 0) + $this->fixedDiscount - $this->fixedDiscount * ($this->taxRate / 100);
+                return $discount + $cartItem->discountTotal;
+            }, 0) + $this->fixedDiscount - $this->fixedDiscount * ($this->taxRate / 100);
     }
 
     /**
@@ -662,6 +664,8 @@ class Cart
         $this->getConnection()->table($this->getTableName())->where('identifier', '=', $identifier)->update([
             'user_id' => $this->userId
         ]);
+
+        return $this;
     }
 
     /**
@@ -825,6 +829,7 @@ class Cart
             'discount_id' => $this->discountId,
             'total'      => $this->totalFloat(),
             'content'    => serialize($content),
+            'fixed_discount' => $this->fixedDiscount,
             'created_at' => $this->createdAt ?: Carbon::now(),
             'updated_at' => Carbon::now(),
         ]);
@@ -874,6 +879,7 @@ class Cart
         $this->updatedAt = Carbon::parse(data_get($stored, 'updated_at'));
         $this->userId = data_get($stored, 'user_id');
         $this->discountId = data_get($stored, 'discount_id');
+        $this->fixedDiscount = data_get($stored, 'fixed_discount');
 
         $this->getConnection()->table($this->getTableName())->where('identifier', $identifier)->delete();
     }
@@ -920,6 +926,7 @@ class Cart
         $this->updatedAt = Carbon::parse(data_get($stored, 'updated_at'));
         $this->userId = data_get($stored, 'user_id');
         $this->discountId = data_get($stored, 'discount_id');
+        $this->fixedDiscount = data_get($stored, 'fixed_discount');
     }
 
     /**
@@ -1162,5 +1169,15 @@ class Cart
     public function discountId()
     {
         return $this->discountId;
+    }
+
+    /**
+     * Get Fixed discount
+     *
+     * @return float
+     */
+    public function fixedDiscount()
+    {
+        return $this->fixedDiscount;
     }
 }
