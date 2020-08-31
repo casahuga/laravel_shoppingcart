@@ -652,11 +652,16 @@ class Cart
     /**
      * Set userId of the cart
      *
-     * @param int $userId
+     * @param string $identifier
+     * @param int    $userId
      */
-    public function setUserId($userId)
+    public function setUserId($identifier, $userId)
     {
         $this->userId = $userId;
+
+        $this->getConnection()->table($this->getTableName())->where('identifier', '=', $identifier)->update([
+            'user_id' => $this->userId
+        ]);
     }
 
     /**
@@ -670,11 +675,16 @@ class Cart
     /**
      * Set discountId of the cart
      *
-     * @param int $discountId
+     * @param string $identifier
+     * @param int    $discountId
      */
-    public function setDiscountId($discountId)
+    public function setDiscountId($identifier, $discountId)
     {
         $this->discountId = $discountId;
+
+        $this->getConnection()->table($this->getTableName())->where('identifier', '=', $identifier)->update([
+            'discount_id' => $this->discountId
+        ]);
     }
 
     /**
