@@ -479,6 +479,30 @@ class Cart
     }
 
     /**
+     * Get the discount without tax of the items in the cart and cart discount if applied.
+     *
+     * @return float
+     */
+    public function discountWithoutTaxFloat()
+    {
+        return $this->subtotalFloat() - $this->subtotalTaxFloat() - $this->totalFloat() + $this->taxFloat();
+    }
+
+    /**
+     * Get the discount without tax of the items in the cart as formatted string.
+     *
+     * @param int    $decimals
+     * @param string $decimalPoint
+     * @param string $thousandSeperator
+     *
+     * @return string
+     */
+    public function discountWithoutTax($decimals = null, $decimalPoint = null, $thousandSeperator = null)
+    {
+        return $this->numberFormat($this->discountWithoutTaxFloat(), $decimals, $decimalPoint, $thousandSeperator);
+    }
+
+    /**
      * Get the global discount of the cart.
      *
      * @return float
@@ -855,7 +879,7 @@ class Cart
             'content'    => serialize($content),
             'fixed_discount' => $this->fixedDiscount,
             'created_at' => $this->createdAt ?: Carbon::now(),
-            'updated_at' => Carbon::now(),
+            'updated_at' => Carbon::now()
         ]);
 
         $this->events->dispatch('cart.stored');
