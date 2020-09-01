@@ -30,6 +30,7 @@ use ReflectionClass;
  * @property-read float subtotal
  * @property-read float taxSubtotal
  * @property-read float subtotalWithoutTax
+ * @property-read float totalWithoutTax
  * @property-read float taxTotal
  * @property-read float tax
  * @property-read float total
@@ -279,6 +280,20 @@ class CartItem implements Arrayable, Jsonable
     public function taxTotal($decimals = null, $decimalPoint = null, $thousandSeperator = null)
     {
         return $this->numberFormat($this->taxTotal, $decimals, $decimalPoint, $thousandSeperator);
+    }
+
+    /**
+     * Returns the formatted subtotal without tax.
+     *
+     * @param int    $decimals
+     * @param string $decimalPoint
+     * @param string $thousandSeperator
+     *
+     * @return string
+     */
+    public function subtotalWithoutTax($decimals = null, $decimalPoint = null, $thousandSeperator = null)
+    {
+        return $this->numberFormat($this->subtotalWithoutTax, $decimals, $decimalPoint, $thousandSeperator);
     }
 
     /**

@@ -383,11 +383,7 @@ class Cart
      */
     public function taxFloat()
     {
-        $subtotalWithoutTax = $this->getContent()->reduce(function ($total, CartItem $cartItem) {
-                return $total + $cartItem->total;
-            }, 0) - $this->fixedDiscount;
-        if ($subtotalWithoutTax < 0 )  $subtotalWithoutTax = 0;
-        return ($subtotalWithoutTax * ($this->taxRate / 100));
+        return ($this->totalFloat() - $this->totalFloat() / ((100 + $this->taxRate) / 100));
     }
 
     /**
