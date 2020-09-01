@@ -355,11 +355,11 @@ class Cart
      */
     public function totalFloat()
     {
-        $subtotalWithoutTax = $this->getContent()->reduce(function ($subtotal, CartItem $cartItem) {
-                return $subtotal + $cartItem->subtotal;
-            }, 0) - $this->fixedDiscount + ($this->fixedDiscount * ($this->taxRate / 100));
-        $subtotalWithTax = $subtotalWithoutTax + ($subtotalWithoutTax * ($this->taxRate / 100));
-        return $subtotalWithTax;
+        $total =  $this->getContent()->reduce(function ($total, CartItem $cartItem) {
+                return $total + $cartItem->subtotal;
+            }, 0) - $this->fixedDiscount;
+        if ($total < 0 )  $total = 0;
+        return $total;
     }
 
     /**
@@ -383,9 +383,10 @@ class Cart
      */
     public function taxFloat()
     {
-        $subtotalWithoutTax = $this->getContent()->reduce(function ($subtotal, CartItem $cartItem) {
-                return $subtotal + $cartItem->subtotal;
-            }, 0) - $this->fixedDiscount + ($this->fixedDiscount * ($this->taxRate / 100));
+        $subtotalWithoutTax = $this->getContent()->reduce(function ($total, CartItem $cartItem) {
+                return $total + $cartItem->total;
+            }, 0) - $this->fixedDiscount;
+        if ($subtotalWithoutTax < 0 )  $subtotalWithoutTax = 0;
         return ($subtotalWithoutTax * ($this->taxRate / 100));
     }
 
@@ -437,7 +438,7 @@ class Cart
     public function subtotalTaxFloat()
     {
         return $this->getContent()->reduce(function ($tax, CartItem $cartItem) {
-            return $tax + $cartItem->taxTotal;
+            return $tax + $cartItem->taxSubtotal;
         }, 0);
     }
 
@@ -464,7 +465,7 @@ class Cart
     {
         return $this->getContent()->reduce(function ($discount, CartItem $cartItem) {
                 return $discount + $cartItem->discountTotal;
-            }, 0) + $this->fixedDiscount - $this->fixedDiscount * ($this->taxRate / 100);
+            }, 0) + $this->fixedDiscount;
     }
 
     /**

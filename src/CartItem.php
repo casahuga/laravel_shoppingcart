@@ -12,15 +12,24 @@ use Illuminate\Support\Arr;
 use ReflectionClass;
 
 /**
+ * @property-read float commissionItem
+ * @property-read float priceCommission
+ * @property-read float priceCommissionTotal
+ * @property-read float totalCommission
+ * @property-read float taxBeforeDiscount
+ * @property-read float totalTaxBeforeDiscount
+ * @property-read float priceTaxBeforeDiscount
+ * @property-read float priceTaxBeforeDiscountTotal
  * @property-read mixed discount
  * @property-read float discountTotal
+ * @property-read float priceDiscount
+ * @property-read float priceDiscountTotal
  * @property-read float priceTarget
  * @property-read float priceNet
- * @property-read float priceCommission
  * @property-read float priceTotal
  * @property-read float subtotal
  * @property-read float taxSubtotal
- * @property-read float subtotalTax
+ * @property-read float subtotalWithoutTax
  * @property-read float taxTotal
  * @property-read float tax
  * @property-read float total
