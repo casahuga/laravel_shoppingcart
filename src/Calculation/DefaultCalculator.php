@@ -40,15 +40,15 @@ class DefaultCalculator implements Calculator
             case 'priceDiscountTotal':
                 return round($cartItem->priceDiscount * $cartItem->qty, $decimals);
             case 'tax':
-                return round($cartItem->priceDiscount * ($cartItem->taxRate / 100), $decimals);
+                return round($cartItem->priceDiscount * ((100 + $cartItem->taxRate) / 100), $decimals);
             case 'priceTax':
-                return round($cartItem->priceDiscount + $cartItem->tax, $decimals);
+                return round($cartItem->priceDiscount, $decimals);
             case 'priceTotal':
-                return round($cartItem->priceTax, $decimals);
+                return round($cartItem->priceTax * $cartItem->qty, $decimals);
             case 'subtotal':
-                return max(round($cartItem->priceTotal * $cartItem->qty, $decimals), 0);
+                return max(round($cartItem->priceTax * $cartItem->qty, $decimals), 0);
             case 'taxSubtotal':
-                return round($cartItem->subtotal / ((100 + $cartItem->taxRate) / 100), $decimals);
+                return round($cartItem->subtotal * ($cartItem->taxRate / 100), $decimals);
             case 'subtotalWithoutTax':
                 return round($cartItem->subtotal - $cartItem->taxSubtotal, $decimals);
             case 'priceTarget':
@@ -56,7 +56,7 @@ class DefaultCalculator implements Calculator
             case 'taxTotal':
                 return round($cartItem->subtotal * ($cartItem->taxRate / 100), $decimals);
             case 'total':
-                return round($cartItem->subtotal + $cartItem->taxTotal, $decimals);
+                return round($cartItem->subtotal, $decimals);
             default:
                 return;
         }

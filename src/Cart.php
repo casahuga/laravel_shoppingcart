@@ -437,8 +437,8 @@ class Cart
      */
     public function subtotalTaxFloat()
     {
-        return $this->getContent()->reduce(function ($tax, CartItem $cartItem) {
-            return $tax + $cartItem->taxSubtotal;
+        return $this->getContent()->reduce(function ($taxSubtotal, CartItem $cartItem) {
+            return $taxSubtotal + $cartItem->taxSubtotal;
         }, 0);
     }
 
